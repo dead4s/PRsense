@@ -1,0 +1,26 @@
+{
+  "manifest_version": 3,
+  "name": "PRsense",
+  "version": "1.0",
+  "description": "Automatically summarize GitHub PR diffs and fill in PR titles and descriptions.",
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  },
+  "permissions": ["scripting", "activeTab", "storage"],
+  "host_permissions": ["https://github.com/*", "https://api.openai.com/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": "icons/icon48.png"
+  }
+}
