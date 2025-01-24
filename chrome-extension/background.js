@@ -22,12 +22,12 @@ async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = null) {
       
       ret_commit = {}; 
       ret_commit.message = commit.commit.message;
-      ret_commit.author = commit.commit.author; 
+      ret_commit.author = commit.commit.author.name; 
       ret_commit.email = commit.commit.author.email;
       ret_commit.date = commit.commit.author.date;
       ret_commit.url = commit.commit.tree.url;
 
-      ret_commits.push(ret_commits);
+      ret_commits.push(ret_commit);
     });
 
     return ret_commits;
@@ -86,21 +86,26 @@ const fetchSummary = (diffText) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "FETCH_SUMMARY") {
     const diffText = message.payload;
-    console.log('here!!!');
     
-    // TODO: get ths fields from url
+    // TODO: get ths fields from url (@rey)
     const owner = "samsung";
     const repo = "one"; 
     const num_commit = 3; 
+    
+    // TODO: get new PR's author and date info (@rey)
+    const author = 'zetwhite';
+    const email = 'zetwhite@naver.com';
+    const date = '2025-01-24T07:13:07Z';
 
     (async () => {
       try {
-        // 비동기 작업 수행
+        // TODO: update `getCommitHistory` and `fetchSummary` have same style (@zetwhite)
         const commits = await getCommitHistroy(owner, repo, num_commit);
         console.log(commits);
 
         const text = await fetchSummary(diffText);
         sendResponse({ text });
+      
       } catch (error) {
         console.log('error in FETCH_SUMMARY', error);
         sendResponse({ error });
