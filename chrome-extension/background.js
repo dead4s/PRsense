@@ -1,3 +1,43 @@
+async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = null) {
+  const url = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${commitsToFetch}`;
+
+  try {
+    const headers = token ? { Authorization: `token ${token}` } : {};
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const raw_commits = await response.json();
+    const ret_commits = [];
+    console.log(`last ${commitsToFetch} commits:`);
+    raw_commits.forEach((commit, index) => {
+
+      console.log(`commit:\t #${index + 1}`);
+      console.log(`message:\t ${commit.commit.message}`);
+      console.log(`author:\t ${commit.commit.author.name}`);
+      console.log(`date:\t ${commit.commit.author.date}`);
+      console.log('---------------------------');
+      
+      ret_commit = {}; 
+      ret_commit.message = commit.commit.message;
+      ret_commit.author = commit.commit.author; 
+      ret_commit.email = commit.commit.author.email;
+      ret_commit.date = commit.commit.author.date;
+      ret_commit.url = commit.commit.tree.url;
+
+      ret_commits.push(ret_commits);
+    });
+
+    return ret_commits;
+
+  } catch (error) {
+    console.error('error while fetching commits:', error);
+  }
+};
+
+
 const fetchSummary = (diffText) => {
   return new Promise((resolve, reject) => {
     chrome.storage.local.get("openaiApiKey", async (data) => {
@@ -8,6 +48,8 @@ const fetchSummary = (diffText) => {
       }
 
       console.log("API key: ", apiKey);
+      console.log("diffText: ", diffText);
+
       try {
         const response = await fetch(
           "https://api.openai.com/v1/chat/completions",
@@ -44,15 +86,26 @@ const fetchSummary = (diffText) => {
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "FETCH_SUMMARY") {
     const diffText = message.payload;
+    console.log('here!!!');
+    
+    // TODO: get ths fields from url
+    const owner = "samsung";
+    const repo = "one"; 
+    const num_commit = 3; 
 
-    // OpenAI API 키를 가져오기
-    fetchSummary(diffText)
-      .then((text) => {
+    (async () => {
+      try {
+        // 비동기 작업 수행
+        const commits = await getCommitHistroy(owner, repo, num_commit);
+        console.log(commits);
+
+        const text = await fetchSummary(diffText);
         sendResponse({ text });
-      })
-      .catch((error) => {
+      } catch (error) {
+        console.log('error in FETCH_SUMMARY', error);
         sendResponse({ error });
-      });
+      }
+    })();
 
     return true;
   }
