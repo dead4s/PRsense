@@ -1,42 +1,5 @@
-async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = null) {
-  const url = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${commitsToFetch}`;
-
-  try {
-    const headers = token ? { Authorization: `token ${token}` } : {};
-    const response = await fetch(url, { headers });
-
-    if (!response.ok) {
-      throw new Error(`HTTP error! Status: ${response.status}`);
-    }
-
-    const raw_commits = await response.json();
-    const ret_commits = [];
-    console.log(`last ${commitsToFetch} commits:`);
-    raw_commits.forEach((commit, index) => {
-
-      console.log(`commit:\t #${index + 1}`);
-      console.log(`message:\t ${commit.commit.message}`);
-      console.log(`author:\t ${commit.commit.author.name}`);
-      console.log(`date:\t ${commit.commit.author.date}`);
-      console.log('---------------------------');
-      
-      ret_commit = {}; 
-      ret_commit.message = commit.commit.message;
-      ret_commit.author = commit.commit.author.name; 
-      ret_commit.email = commit.commit.author.email;
-      ret_commit.date = commit.commit.author.date;
-      ret_commit.url = commit.commit.tree.url;
-
-      ret_commits.push(ret_commit);
-    });
-
-    return ret_commits;
-
-  } catch (error) {
-    console.error('error while fetching commits:', error);
-  }
-};
-
+import { getCommitHistroy } from "./pr_histroy.js"
+// import {} from './ask_llm.js'
 
 const fetchSummary = (diffText) => {
   return new Promise((resolve, reject) => {
