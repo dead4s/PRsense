@@ -1,11 +1,11 @@
 export class Commit {
-  constructor(title, desc, author, email, date, url) {
+  constructor(title, desc, author, email, date, diff) {
     this.title = title; 
     this.desc = desc;
     this.author = author;
     this.email = email;
     this.date = date;
-    this.url = url;
+    this.diff = diff 
   }
 }
 
@@ -17,6 +17,27 @@ function splitMessage(message) {
     desc: message.slice(index + 2)
   };
 }
+
+async function getDiff(commit_url, token = null){
+  const url = `${commit_url}.diff`;
+  console.log(url);
+  try
+  {
+    const headers = token ? { Authorization: `token ${token}` } : {};
+    const response = await fetch(url, { headers });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! Status: ${response.status}`);
+    }
+
+    const diff_text = await response.text();
+    console.log(diff_text);
+    return diff_text;
+  }
+  catch (error) {
+    console.error('error while fetching diff:', error);
+  }
+};
 
 export async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = null) {
   const url = `https://api.github.com/repos/${owner}/${repo}/commits?per_page=${commitsToFetch}`;
@@ -32,15 +53,17 @@ export async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = 
     const raw_commits = await response.json();
     const ret_commits = [];
     console.log(`last ${commitsToFetch} commits:`);
-    
-    raw_commits.forEach((commit, index) => {
-
+   
+    for (const [index, commit] of raw_commits.entries()) 
+    {
       console.log(`commit:\t #${index + 1}`);
       console.log(`message:\t ${commit.commit.message}`);
       console.log(`author:\t ${commit.commit.author.name}`);
       console.log(`date:\t ${commit.commit.author.date}`);
       console.log('---------------------------');
-  
+
+      diff_text = await getDiff(commit.html_url);
+
       const split_message = splitMessage(commit.commit.message);
       const new_commit = new Commit(
         split_message.title, 
@@ -48,10 +71,10 @@ export async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = 
         commit.commit.author.name,
         commit.commit.author.email,
         commit.commit.author.date,
-        commit.commit.tree.url
-      ) 
+        diff_text
+      ); 
       ret_commits.push(new_commit);
-    });
+    }
 
     return ret_commits;
 
