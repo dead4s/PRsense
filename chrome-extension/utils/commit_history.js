@@ -62,7 +62,7 @@ export async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = 
       console.log(`date:\t ${commit.commit.author.date}`);
       console.log('---------------------------');
 
-      diff_text = await getDiff(commit.html_url);
+      const diff_text = await getDiff(commit.html_url);
 
       const split_message = splitMessage(commit.commit.message);
       const new_commit = new Commit(

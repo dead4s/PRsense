@@ -1,5 +1,5 @@
 import { getCommitHistroy } from "./utils/commit_history.js"
-import { fetchSummary } from "./utils/llm.js"
+import { generateTitleDesc } from "./utils/llm.js"
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   if (message.type === "FETCH_SUMMARY") {
@@ -17,13 +17,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
     (async () => {
       try {
-        // TODO: update `getCommitHistory` and `fetchSummary` have same style (@zetwhite)
         const commits = await getCommitHistroy(owner, repo, num_commit);
         console.log(commits);
+        
+        const {title, desc} = await generateTitleDesc(commits, author, email, date, diffText);
+        sendResponse({title, desc});
 
-        const text = await fetchSummary(diffText);
-        sendResponse({ text });
-      
       } catch (error) {
         console.log('error in FETCH_SUMMARY', error);
         sendResponse({ error });
