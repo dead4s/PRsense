@@ -18,6 +18,23 @@ function splitMessage(message) {
   };
 }
 
+function remove_last_bracelet(str) {
+  // find last '('
+  const lastOpen = str.lastIndexOf('(');
+  if (lastOpen === -1) return str; 
+
+  // find corresponding ')'
+  const lastClose = str.indexOf(')', lastOpen);
+  if (lastClose === -1) return str; 
+
+  let before = str.substring(0, lastOpen);
+  // remove space before 'before'
+  before = before.replace(/\s+$/, "");
+  
+  const after = str.substring(lastClose + 1);
+  return before + after;
+}
+
 async function getDiff(commit_url, token = null){
   const url = `${commit_url}.diff`;
   console.log(url);
@@ -64,10 +81,12 @@ export async function getCommitHistroy(owner, repo, commitsToFetch = 3, token = 
 
       const diff_text = await getDiff(commit.html_url);
 
-      const split_message = splitMessage(commit.commit.message);
+      var {title, desc} = splitMessage(commit.commit.message);
+      title = remove_last_bracelet(title);
+      
       const new_commit = new Commit(
-        split_message.title, 
-        split_message.desc,
+        title,
+        desc,
         commit.commit.author.name,
         commit.commit.author.email,
         commit.commit.author.date,
