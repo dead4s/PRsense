@@ -33,19 +33,20 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
           console.error("Error:", response.error);
           return;
         }
-
-        // Handle the summary response
-        const summary = response.text;
+        
+        if(!response.title || !response.desc)
+        {
+          console.error("Error: response does not contian title or desc");
+          return;
+        }
 
         // Fill the PR title and description
         const titleInput = document.querySelector("#pull_request_title");
         const descriptionInput = document.querySelector("#pull_request_body");
 
         if (titleInput && descriptionInput) {
-          const [title, ...descriptionParts] = summary.split("\n");
-          titleInput.value = title;
-          descriptionInput.value = descriptionParts.join("\n");
-
+          titleInput.value = response.title;
+          descriptionInput.value = response.desc;
           sendResponse("success");
         }
       }
